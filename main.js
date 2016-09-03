@@ -98,8 +98,6 @@ var Pacman = function() {
 Pacman.prototype.handleWindowResize = function() {
     this.canvas.width = document.body.clientWidth;
     this.canvas.height = document.body.clientHeight - 50;
-    this.state.map.height = Math.ceil(this.canvas.height / this.config.tile.size);
-    this.state.map.width = Math.ceil(this.canvas.width / this.config.tile.size);
     this.drawMap();
 };
 Pacman.prototype.drawImage = function(i, j, img, offsetX, offsetY) {
@@ -131,35 +129,37 @@ Pacman.prototype.drawWall = function(i, j) {
     if (i < 0 || j < 0 || i >= this.state.map.height || j >= this.state.map.width || !this.isWall(i, j)) {
         return false;
     }
+    var tileSize = this.config.tile.size,
+        radius = Math.floor(tileSize / 2);
     this.canvasContext.save();
     this.canvasContext.lineWidth = 3;
     this.canvasContext.strokeStyle = this.config.tile.border;
     this.canvasContext.beginPath();
     var adjusted_i = i + this.state.user.minimum[1],
         adjusted_j = j + this.state.user.minimum[0],
-        x = adjusted_j * this.config.tile.size,
-        y = adjusted_i * this.config.tile.size;
+        x = adjusted_j * tileSize,
+        y = adjusted_i * tileSize;
     
     switch (this.wallType(i, j)) {
         case 1:
-            this.canvasContext.arc(x + this.config.tile.size, y + this.config.tile.size, Math.floor(this.config.tile.size / 2), Math.PI,  3 * Math.PI / 2, false);
+            this.canvasContext.arc(x + tileSize, y + tileSize, radius, Math.PI,  3 * Math.PI / 2, false);
             break;
         case 2:
-            this.canvasContext.arc(x + this.config.tile.size, y, Math.floor(this.config.tile.size / 2), Math.PI, Math.PI / 2, true);
+            this.canvasContext.arc(x + tileSize, y, radius, Math.PI, Math.PI / 2, true);
             break;
         case 3:
-            this.canvasContext.arc(x, y + this.config.tile.size, Math.floor(this.config.tile.size / 2), 3 * Math.PI / 2, 0, false);
+            this.canvasContext.arc(x, y + tileSize, radius, 3 * Math.PI / 2, 0, false);
             break;
         case 4:
-            this.canvasContext.arc(x, y, Math.floor(this.config.tile.size / 2), Math.PI / 2,  2 * Math.PI, true);
+            this.canvasContext.arc(x, y, radius, Math.PI / 2,  2 * Math.PI, true);
             break;
         case 5:
-            this.canvasContext.moveTo(x + Math.floor(this.config.tile.size / 2), y);
-            this.canvasContext.lineTo(x + Math.floor(this.config.tile.size / 2), y + this.config.tile.size);
+            this.canvasContext.moveTo(x + radius, y);
+            this.canvasContext.lineTo(x + radius, y + tileSize);
             break;
         case 6:
-            this.canvasContext.moveTo(x, y + Math.floor(this.config.tile.size / 2));
-            this.canvasContext.lineTo(x + this.config.tile.size, y + Math.floor(this.config.tile.size / 2));
+            this.canvasContext.moveTo(x, y + Math.floor(tileSize / 2));
+            this.canvasContext.lineTo(x + tileSize, y + Math.floor(tileSize / 2));
             break;
     }
     this.canvasContext.stroke();
