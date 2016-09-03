@@ -207,10 +207,10 @@ Pacman.prototype.drawPlayer = function(i, j, player) {
     if (player.type.search("ghost") === 0) {
         this.drawImage(i, j, this.config.playerTypes[player.type], this.config.tile.playerSize * player.orientation, 0);
     } else { // pacman
-        this.animatePacman(i, j, player.orientation, player.tick);
+        this.animateEatingPacman(i, j, player.orientation, player.tick);
     }
 }
-Pacman.prototype.animatePacman = function(i, j, orientation, tick) {
+Pacman.prototype.animateEatingPacman = function(i, j, orientation, tick) {
     var o = Math.floor(tick / 3) % 6;
     if (o > 3) {
         o = 6 - o;
@@ -218,7 +218,7 @@ Pacman.prototype.animatePacman = function(i, j, orientation, tick) {
     tick = tick % 1000;
     this.drawImage(i, j, this.config.playerTypes['pacman'], this.config.tile.playerSize * o, this.config.tile.playerSize * orientation);
     requestAnimationFrame(function () {
-        this.animatePacman(i, j, orientation, tick + 1);
+        this.animateEatingPacman(i, j, orientation, tick + 1);
     }.bind(this));
 }
 Pacman.prototype.drawMap = function () {
