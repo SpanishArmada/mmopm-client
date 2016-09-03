@@ -6,8 +6,15 @@ var Pacman = function() {
             color: "#000",
             border: "#1B1BFF",
         }, 
-        online: false
+        online: false,
+        playerTypes: {}
     };
+    ["ghost_blinky", "ghost_pinky", "ghost_inky", "ghost_clyde"].forEach(function(type) {
+        var img = new Image(this.config.tile.size, this.config.tile.size);
+        img.src = 'assets/' + type + '.png';
+        this.config.playerTypes[type] = img;
+    }, this);
+    
 
     this.state = {
         map: {
@@ -37,6 +44,28 @@ var Pacman = function() {
 
     // temp data
     this.state.map = JSON.parse('{"width":32,"height":20,"data":{"0":{"0":1,"1":1,"2":1,"3":1,"4":1,"5":1,"6":1,"7":1,"8":1,"9":1,"10":1,"11":1,"12":1,"13":1,"14":1,"15":1,"16":1,"17":1,"18":1,"19":1,"20":1,"21":1,"22":1,"23":1,"24":1,"25":1,"26":1,"27":1,"28":1,"29":1,"30":1,"31":1},"1":{"0":1,"1":0,"2":0,"3":0,"4":0,"5":0,"6":0,"7":0,"8":0,"9":0,"10":0,"11":0,"12":0,"13":0,"14":0,"15":0,"16":0,"17":0,"18":0,"19":1,"20":1,"21":0,"22":0,"23":0,"24":0,"25":0,"26":0,"27":0,"28":0,"29":0,"30":0,"31":1},"2":{"0":1,"1":0,"2":1,"3":1,"4":1,"5":1,"6":0,"7":1,"8":1,"9":0,"10":1,"11":1,"12":1,"13":0,"14":1,"15":1,"16":1,"17":1,"18":0,"19":1,"20":1,"21":0,"22":1,"23":1,"24":0,"25":1,"26":1,"27":1,"28":1,"29":1,"30":0,"31":1},"3":{"0":1,"1":0,"2":1,"3":1,"4":1,"5":1,"6":0,"7":1,"8":1,"9":0,"10":1,"11":1,"12":1,"13":0,"14":1,"15":1,"16":1,"17":1,"18":0,"19":1,"20":1,"21":0,"22":1,"23":1,"24":0,"25":1,"26":1,"27":1,"28":1,"29":1,"30":0,"31":1},"4":{"0":1,"1":0,"2":0,"3":0,"4":0,"5":0,"6":0,"7":0,"8":0,"9":0,"10":1,"11":1,"12":1,"13":0,"14":1,"15":1,"16":0,"17":0,"18":0,"19":1,"20":1,"21":0,"22":1,"23":1,"24":0,"25":0,"26":0,"27":0,"28":0,"29":0,"30":0,"31":1},"5":{"0":1,"1":1,"2":1,"3":0,"4":1,"5":1,"6":1,"7":1,"8":0,"9":1,"10":1,"11":1,"12":1,"13":0,"14":1,"15":1,"16":0,"17":1,"18":1,"19":1,"20":1,"21":0,"22":0,"23":0,"24":0,"25":1,"26":1,"27":1,"28":0,"29":0,"30":0,"31":1},"6":{"0":1,"1":1,"2":1,"3":0,"4":1,"5":1,"6":1,"7":1,"8":0,"9":1,"10":1,"11":1,"12":1,"13":0,"14":1,"15":1,"16":0,"17":1,"18":1,"19":1,"20":1,"21":1,"22":1,"23":1,"24":0,"25":1,"26":1,"27":1,"28":0,"29":1,"30":1,"31":1},"7":{"0":1,"1":0,"2":0,"3":0,"4":0,"5":0,"6":0,"7":0,"8":0,"9":0,"10":0,"11":0,"12":0,"13":0,"14":1,"15":1,"16":0,"17":1,"18":1,"19":1,"20":1,"21":1,"22":1,"23":1,"24":0,"25":1,"26":1,"27":0,"28":0,"29":1,"30":1,"31":1},"8":{"0":1,"1":0,"2":1,"3":1,"4":0,"5":1,"6":1,"7":1,"8":1,"9":1,"10":0,"11":1,"12":1,"13":0,"14":0,"15":0,"16":0,"17":0,"18":0,"19":0,"20":0,"21":0,"22":0,"23":0,"24":0,"25":1,"26":1,"27":0,"28":1,"29":1,"30":1,"31":1},"9":{"0":1,"1":0,"2":1,"3":1,"4":0,"5":1,"6":1,"7":1,"8":1,"9":1,"10":0,"11":1,"12":1,"13":0,"14":1,"15":1,"16":1,"17":1,"18":1,"19":0,"20":1,"21":1,"22":0,"23":1,"24":1,"25":1,"26":1,"27":0,"28":1,"29":1,"30":1,"31":1},"10":{"0":1,"1":0,"2":1,"3":1,"4":0,"5":1,"6":1,"7":0,"8":1,"9":1,"10":0,"11":1,"12":1,"13":0,"14":1,"15":1,"16":1,"17":1,"18":1,"19":0,"20":1,"21":1,"22":0,"23":1,"24":1,"25":1,"26":1,"27":0,"28":0,"29":1,"30":1,"31":1},"11":{"0":1,"1":0,"2":1,"3":1,"4":0,"5":0,"6":0,"7":0,"8":0,"9":0,"10":0,"11":0,"12":0,"13":0,"14":0,"15":0,"16":0,"17":0,"18":0,"19":0,"20":0,"21":0,"22":0,"23":1,"24":1,"25":1,"26":1,"27":1,"28":0,"29":0,"30":0,"31":1},"12":{"0":1,"1":0,"2":1,"3":1,"4":0,"5":1,"6":1,"7":1,"8":1,"9":1,"10":1,"11":0,"12":1,"13":1,"14":1,"15":1,"16":0,"17":1,"18":1,"19":1,"20":1,"21":1,"22":0,"23":1,"24":1,"25":1,"26":1,"27":1,"28":0,"29":1,"30":1,"31":1},"13":{"0":1,"1":0,"2":1,"3":1,"4":0,"5":1,"6":1,"7":1,"8":1,"9":1,"10":1,"11":0,"12":1,"13":1,"14":1,"15":1,"16":0,"17":1,"18":1,"19":1,"20":1,"21":1,"22":0,"23":1,"24":1,"25":1,"26":1,"27":1,"28":0,"29":1,"30":1,"31":1},"14":{"0":1,"1":0,"2":0,"3":0,"4":0,"5":0,"6":1,"7":1,"8":0,"9":0,"10":0,"11":0,"12":0,"13":0,"14":0,"15":0,"16":0,"17":0,"18":0,"19":0,"20":0,"21":0,"22":0,"23":0,"24":0,"25":0,"26":0,"27":0,"28":0,"29":1,"30":1,"31":1},"15":{"0":1,"1":0,"2":1,"3":1,"4":1,"5":1,"6":1,"7":1,"8":1,"9":1,"10":0,"11":1,"12":1,"13":1,"14":1,"15":1,"16":1,"17":1,"18":1,"19":1,"20":1,"21":0,"22":1,"23":1,"24":1,"25":1,"26":1,"27":1,"28":0,"29":1,"30":1,"31":1},"16":{"0":1,"1":0,"2":1,"3":1,"4":1,"5":1,"6":1,"7":1,"8":1,"9":1,"10":0,"11":1,"12":1,"13":1,"14":1,"15":1,"16":1,"17":1,"18":1,"19":1,"20":1,"21":0,"22":1,"23":1,"24":1,"25":1,"26":1,"27":1,"28":0,"29":1,"30":1,"31":1},"17":{"0":1,"1":0,"2":1,"3":1,"4":1,"5":1,"6":0,"7":1,"8":1,"9":1,"10":0,"11":1,"12":1,"13":1,"14":0,"15":0,"16":0,"17":0,"18":0,"19":1,"20":1,"21":0,"22":0,"23":0,"24":0,"25":0,"26":1,"27":1,"28":0,"29":1,"30":1,"31":1},"18":{"0":1,"1":0,"2":0,"3":0,"4":0,"5":0,"6":0,"7":0,"8":0,"9":0,"10":0,"11":1,"12":1,"13":1,"14":0,"15":1,"16":1,"17":1,"18":0,"19":0,"20":0,"21":0,"22":1,"23":1,"24":1,"25":0,"26":0,"27":0,"28":0,"29":1,"30":1,"31":1},"19":{"0":1,"1":1,"2":1,"3":1,"4":1,"5":1,"6":1,"7":1,"8":1,"9":1,"10":1,"11":1,"12":1,"13":1,"14":1,"15":1,"16":1,"17":1,"18":1,"19":1,"20":1,"21":1,"22":1,"23":1,"24":1,"25":1,"26":1,"27":1,"28":1,"29":1,"30":1,"31":1}}}');
+    this.state.players = [
+        {
+            type: "ghost_blinky",
+            coordinate: [2, 4],
+            orientation: 0
+        },
+        {
+            type: "ghost_pinky",
+            coordinate: [3, 4],
+            orientation: 1
+        },
+        {
+            type: "ghost_inky",
+            coordinate: [4, 4],
+            orientation: 2
+        },
+        {
+            type: "ghost_clyde",
+            coordinate: [5, 4],
+            orientation: 3
+        },
+    ];
 
     this.canvas = document.getElementById("canvas");
     this.canvasContext = this.canvas.getContext('2d');
@@ -51,11 +80,16 @@ Pacman.prototype.handleWindowResize = function() {
     this.state.map.width = Math.ceil(this.canvas.width / this.config.tile.size);
     this.drawMap();
 };
-Pacman.prototype.drawImage = function(i, j, img) {
+Pacman.prototype.drawImage = function(i, j, img, orientation) {
     var x = j * this.config.tile.size,
         y = i * this.config.tile.size;
+    if (typeof(orientation) === "undefined") orientation = 0;
+
+    var offsetX = this.config.tile.size * orientation,
+        offsetY = 0;
+    console.log(offsetX);
     this.canvasContext.save();
-    this.canvasContext.drawImage(img, x, y);
+    this.canvasContext.drawImage(img, offsetX, offsetY, this.config.tile.size, this.config.tile.size, x, y, this.config.tile.size, this.config.tile.size);
     this.canvasContext.restore();
 };
 Pacman.prototype.drawRect = function(i, j, fillStyle) {
@@ -75,10 +109,11 @@ Pacman.prototype.drawRect = function(i, j, fillStyle) {
     this.canvasContext.restore();
 }
 Pacman.prototype.drawWall = function(i, j) {
-    if (i < 0 || j < 0 || i >= this.state.map.height || j >= this.state.map.width) {
+    if (i < 0 || j < 0 || i >= this.state.map.height || j >= this.state.map.width || !this.isWall(i, j)) {
         return false;
     }
     this.canvasContext.save();
+    this.canvasContext.lineWidth = 3;
     this.canvasContext.strokeStyle = this.config.tile.border;
     this.canvasContext.beginPath();
     var adjusted_i = i + this.state.user.minimum[1],
@@ -143,20 +178,21 @@ Pacman.prototype.isWall = function(i, j) {
     }
     return (this.state.map.data[adjusted_i][adjusted_j] == 1);
 }
-Pacman.prototype.drawTile = function(i, j) {
-    var adjusted_i = i + this.state.user.minimum[1],
-        adjusted_j = j + this.state.user.minimum[0];
-    if (this.isWall(i, j)) {
-        this.drawWall(i, j);
-    }
-};
+Pacman.prototype.drawPlayer = function(i, j, orientation, type) {
+    this.drawImage(i, j, this.config.playerTypes[type], orientation);
+}
 
 Pacman.prototype.drawMap = function () {
     for (var i = 0; i < this.state.map.height; i++) {
         for (var j = 0; j < this.state.map.width; j++) {
-            this.drawTile(i, j);
+            this.drawWall(i, j);
         }
     }
+    this.state.players.forEach(function(player) {
+        var i = player.coordinate[1] - this.state.user.minimum[1],
+            j = player.coordinate[0] - this.state.user.minimum[0];
+        this.drawPlayer(i, j, player.orientation, player.type);
+    }, this);
 };
 
 
@@ -186,6 +222,7 @@ function setResizeHandler(callback, timeout) {
 document.addEventListener("DOMContentLoaded", function () {
     var pacman = new Pacman();
     pacman.drawMap();
+    document.querySelector("#overlay").style.display = "none";
     document.querySelector("#cancel").style.display = "none";
     document.querySelector("#start").style.display = "none";
     document.querySelector("#prompt").style.display = "none";

@@ -95,7 +95,16 @@ button:hover {
     width: 280px;
     text-align: center;
 }
+#score {
+    font-size: 1.5em;
+    line-height: 50px;
+    margin-left: 20px;
+}
+#score::before {
+    content: 'Score: ';
+}
 #status {
-    display: table;
-    width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
 }
