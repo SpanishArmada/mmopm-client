@@ -2,7 +2,8 @@
 var Pacman = function() {
     this.config = {
         tile: {
-            size: 32,
+            size: 24,
+            playerSize: 32,
             color: "#000",
             border: "#1B1BFF",
         }, 
@@ -10,11 +11,11 @@ var Pacman = function() {
         playerTypes: {}
     };
     ["ghost_blinky", "ghost_pinky", "ghost_inky", "ghost_clyde"].forEach(function(type) {
-        var img = new Image(this.config.tile.size, this.config.tile.size);
+        var img = new Image(this.config.tile.playerSize, this.config.tile.playerSize);
         img.src = 'assets/' + type + '.png';
         this.config.playerTypes[type] = img;
     }, this);
-    var img = new Image(this.config.tile.size, this.config.tile.size);
+    var img = new Image(this.config.tile.playerSize, this.config.tile.playerSize);
     img.src = 'assets/pacman.png';
     this.config.playerTypes['pacman'] = img;
 
@@ -54,38 +55,42 @@ var Pacman = function() {
         },
         {
             type: "ghost_pinky",
-            coordinate: [3, 4],
+            coordinate: [3, 1],
             orientation: 1
         },
         {
             type: "ghost_inky",
-            coordinate: [4, 4],
+            coordinate: [3, 4],
             orientation: 2
         },
         {
             type: "ghost_clyde",
-            coordinate: [5, 4],
+            coordinate: [5, 1],
             orientation: 3
         },
         {
             type: "pacman",
-            coordinate: [6, 4],
-            orientation: 0
+            coordinate: [7, 1],
+            orientation: 0,
+            tick: 0
         },
         {
             type: "pacman",
-            coordinate: [7, 4],
-            orientation: 1
+            coordinate: [7, 7],
+            orientation: 1,
+            tick: 0
         },
         {
             type: "pacman",
-            coordinate: [8, 4],
-            orientation: 2
+            coordinate: [9, 1],
+            orientation: 2,
+            tick: 0
         },
         {
             type: "pacman",
-            coordinate: [9, 4],
-            orientation: 3
+            coordinate: [9, 7],
+            orientation: 3,
+            tick: 0
         },
     ];
 
@@ -101,12 +106,13 @@ Pacman.prototype.handleWindowResize = function() {
     this.drawMap();
 };
 Pacman.prototype.drawImage = function(i, j, img, offsetX, offsetY) {
-    var x = j * this.config.tile.size,
-        y = i * this.config.tile.size;
+    var x = j * this.config.tile.size - 4,
+        y = i * this.config.tile.size - 4;
     if (typeof(offsetX) === "undefined") offsetX = 0;
     if (typeof(offsetY) === "undefined") offsetY = 0;
     this.canvasContext.save();
-    this.canvasContext.drawImage(img, offsetX, offsetY, this.config.tile.size, this.config.tile.size, x, y, this.config.tile.size, this.config.tile.size);
+    this.canvasContext.clearRect(x, y, this.config.tile.playerSize, this.config.tile.playerSize);
+    this.canvasContext.drawImage(img, offsetX, offsetY, this.config.tile.playerSize, this.config.tile.playerSize, x, y, this.config.tile.playerSize, this.config.tile.playerSize);
     this.canvasContext.restore();
 };
 Pacman.prototype.drawRect = function(i, j, fillStyle) {
@@ -197,14 +203,24 @@ Pacman.prototype.isWall = function(i, j) {
     }
     return (this.state.map.data[adjusted_i][adjusted_j] == 1);
 }
-Pacman.prototype.drawPlayer = function(i, j, orientation, type) {
-    if (type.search("ghost") === 0) {
-        this.drawImage(i, j, this.config.playerTypes[type], this.config.tile.size * orientation, 0);
+Pacman.prototype.drawPlayer = function(i, j, player) {
+    if (player.type.search("ghost") === 0) {
+        this.drawImage(i, j, this.config.playerTypes[player.type], this.config.tile.playerSize * player.orientation, 0);
     } else { // pacman
-        this.drawImage(i, j, this.config.playerTypes[type], this.config.tile.size * 3, this.config.tile.size * orientation);
+        this.animatePacman(i, j, player.orientation, player.tick);
     }
 }
-
+Pacman.prototype.animatePacman = function(i, j, orientation, tick) {
+    var o = Math.floor(tick / 3) % 6;
+    if (o > 3) {
+        o = 6 - o;
+    }
+    tick = tick % 1000;
+    this.drawImage(i, j, this.config.playerTypes['pacman'], this.config.tile.playerSize * o, this.config.tile.playerSize * orientation);
+    requestAnimationFrame(function () {
+        this.animatePacman(i, j, orientation, tick + 1);
+    }.bind(this));
+}
 Pacman.prototype.drawMap = function () {
     for (var i = 0; i < this.state.map.height; i++) {
         for (var j = 0; j < this.state.map.width; j++) {
@@ -214,7 +230,7 @@ Pacman.prototype.drawMap = function () {
     this.state.players.forEach(function(player) {
         var i = player.coordinate[1] - this.state.user.minimum[1],
             j = player.coordinate[0] - this.state.user.minimum[0];
-        this.drawPlayer(i, j, player.orientation, player.type);
+        this.drawPlayer(i, j, player);
     }, this);
 };
 
