@@ -18,7 +18,7 @@ PacmanWs.prototype.wsOpenHandler = function(event) {
 PacmanWs.prototype.wsMessageHandler = function(event) {
     var data = JSON.parse(event.data),
         type = data.type;
-    console.log(data);
+    // console.log(data);
     if (type == 0) { // init msg
         this.pacman.state.user.name = "Kenrick";
         this.pacman.state.user.id = data.player_id;
@@ -26,13 +26,25 @@ PacmanWs.prototype.wsMessageHandler = function(event) {
         this.pacman.state.user.minimum = [Math.max(0, data.x - 16), Math.max(0, data.y - 9)];
         var msg = {
             type: 0,
-            row: Math.floor(this.pacman.canvas.height / this.pacman.config.tile.size / 2),
-            col: Math.floor(this.pacman.canvas.width / this.pacman.config.tile.size / 2),
             player_id: this.pacman.state.user.id,
             player_name: this.pacman.state.user.name,
             arrow: 4
         };
         this.ws.send(JSON.stringify(msg));
+
+        window.addEventListener("keypress", function(event) {
+            var arrow = ["ArrowLeft", "ArrowUp", "ArrowRight", "ArrowDown"].indexOf(event.key);
+            if (arrow < 0)
+                arrow = 4;
+            var msg = {
+                type: 0,
+                player_id: this.pacman.state.user.id,
+                player_name: this.pacman.state.user.name,
+                arrow: arrow
+            };
+            this.ws.send(JSON.stringify(msg));
+        }.bind(this), false);
+
     } else if (type == 1) { // map update
         this.pacman.state.user.score = data.score;
 
@@ -161,8 +173,7 @@ Pacman.prototype.drawTile = function(i, j) {
     }
     if (this.isWall(i, j)) {
         this.drawWall(i, j);
-    }
-    if (this.isFood(i, j)) { // may be pill or energizers
+    } else if (this.isFood(i, j)) { // may be pill or energizers
         this.drawFood(i, j);
     }
 }
