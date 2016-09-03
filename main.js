@@ -47,6 +47,7 @@ PacmanWs.prototype.wsMessageHandler = function(event) {
 
     } else if (type == 1) { // map update
         this.pacman.state.user.score = data.score;
+        document.querySelector("#score").textContent = data.score;
 
         var newGhosts = [];
         for (var ghostId in data.ghost_pos) {
