@@ -18,7 +18,7 @@ PacmanWs.prototype.wsOpenHandler = function(event) {
 PacmanWs.prototype.wsMessageHandler = function(event) {
     var data = JSON.parse(event.data),
         type = data.type;
-    // console.log(data);
+    console.log(data);
     if (type == 0) { // init msg
         this.pacman.state.user.name = "Kenrick";
         this.pacman.state.user.id = data.player_id;
@@ -86,6 +86,7 @@ PacmanWs.prototype.wsMessageHandler = function(event) {
         this.pacman.updateMap(data.grids);
 
     } else if (type == 2) { // die
+        alert("Dead");
     }
 };
 
