@@ -18,7 +18,7 @@ PacmanWs.prototype.wsOpenHandler = function(event) {
 PacmanWs.prototype.wsMessageHandler = function(event) {
     var data = JSON.parse(event.data),
         type = data.type;
-    console.log(data);
+    // console.log(data);
     if (type == 0) { // init msg
         this.pacman.state.user.name = "Kenrick";
         this.pacman.state.user.id = data.player_id;
@@ -81,7 +81,8 @@ PacmanWs.prototype.wsMessageHandler = function(event) {
 
         this.pacman.updateGhosts(newGhosts);
         this.pacman.updatePacmans(newPacmans);
-        this.pacman.updateFood(data.food_pos);
+        this.pacman.updatePill(data.food_pos);
+        this.pacman.updateEnergizer(data.power_up_pos);
         this.pacman.updateMap(data.grids);
 
     } else if (type == 2) { // die
@@ -96,9 +97,13 @@ var Pacman = function() {
             color: "#000",
             border: "#1B1BFF",
         },
-        food: {
+        pill: {
             color: "#FFFF00",
             radius: 5,
+        },
+        energizer: {
+            color: "#FFFF00",
+            radius: 8,
         },
         playerTypes: {}
     };
@@ -180,19 +185,24 @@ Pacman.prototype.drawTile = function(i, j) {
     }
     if (this.isWall(i, j)) {
         this.drawWall(i, j);
-    } else if (this.isFood(i, j)) { // may be pill or energizers
+    } else if (this.isPill(i, j) || this.isEnergizer(i, j)) { // may be pill or energizers
         this.drawFood(i, j);
     }
 }
 Pacman.prototype.drawFood = function(i, j) {
     var tileSize = this.config.tile.size,
-        radius = this.config.food.radius;
+        radius = this.config.pill.radius,
+        color = this.config.pill.color;
+    if (this.isEnergizer(i, j)) {
+        radius = this.config.energizer.radius;
+        color = this.config.energizer.color;
+    }
     var adjusted_i = i + this.state.user.minimum[1],
         adjusted_j = j + this.state.user.minimum[0],
         x = j * tileSize,
         y = i * tileSize;
     this.canvasContext.save();
-    this.canvasContext.fillStyle = this.config.food.color;
+    this.canvasContext.fillStyle = color;
     this.canvasContext.beginPath();
     this.canvasContext.arc(x + tileSize / 2, y + tileSize / 2, radius, 0,  2 * Math.PI, false);
     this.canvasContext.fill();
@@ -267,7 +277,15 @@ Pacman.prototype.isWall = function(i, j) {
         adjusted_j = j + this.state.user.minimum[0];
     return (this.state.map.data[adjusted_i][adjusted_j] == 1);
 };
-Pacman.prototype.isFood = function(i, j) {
+Pacman.prototype.isEnergizer = function(i, j) {
+    if (i < 0 || j < 0 || i >= this.state.map.height || j >= this.state.map.width) {
+        return false;
+    }
+    var adjusted_i = i + this.state.user.minimum[1],
+        adjusted_j = j + this.state.user.minimum[0];
+    return (this.state.energizers.findIndex((v) => { return v[1] === adjusted_i && v[0] === adjusted_j; }) > 0);
+}
+Pacman.prototype.isPill = function(i, j) {
     if (i < 0 || j < 0 || i >= this.state.map.height || j >= this.state.map.width) {
         return false;
     }
@@ -306,7 +324,18 @@ Pacman.prototype.updatePacmans = function (newPacmans) {
         this.state.pacmans.push(newPacman);
     }, this);
 };
-
+Pacman.prototype.updatePill = function(data) {
+    this.state.pills = [];
+    data.forEach((v) => {
+        this.state.pills.push([v.x, v.y]);
+    }, this);
+};
+Pacman.prototype.updateEnergizer = function(data) {
+    this.state.energizers = [];
+    data.forEach((v) => {
+        this.state.energizers.push([v.x, v.y]);
+    }, this);
+};
 
 Pacman.prototype.animateEatingPacman = function(i, j, orientation, tick) {
     var o = Math.floor(tick / 3) % 6;
@@ -338,12 +367,6 @@ Pacman.prototype.drawMap = function () {
     this.drawPlayers();
 };
 
-Pacman.prototype.updateFood = function(data) {
-    this.state.pills = [];
-    data.forEach((v) => {
-        this.state.pills.push([v.x, v.y]);
-    }, this);
-};
 Pacman.prototype.updateMap = function(data) {
     this.state.map.height = data.length;
     this.state.map.width = data[0].length;
