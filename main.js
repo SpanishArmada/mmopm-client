@@ -6,6 +6,7 @@ var PacmanWs = function(pacman) {
     this.ws.onopen = this.wsOpenHandler.bind(this);
     this.ws.onmessage = this.wsMessageHandler.bind(this);
     window.onbeforeunload = function() {
+        this.ws.send(JSON.stringify({type: 1, player_id: this.pacman.state.user.id}));
         // http://stackoverflow.com/a/4818541/917957
         this.ws.onclose = function () {}; // disable onclose handler first
         this.ws.close();
@@ -61,8 +62,7 @@ PacmanWs.prototype.wsMessageHandler = function(event) {
             }
         }
         this.pacman.updatePacmans(newPacmans);
-
-        // this.pacman.state.pills = data.food_pos; // ????
+        this.pacman.updateFood(data.food_pos);
         this.pacman.updateMap(data.grids);
 
     } else if (type == 2) { // die
@@ -76,6 +76,10 @@ var Pacman = function() {
             playerSize: 32,
             color: "#000",
             border: "#1B1BFF",
+        },
+        food: {
+            color: "#FFFF00",
+            radius: 5,
         },
         playerTypes: {}
     };
@@ -109,62 +113,10 @@ var Pacman = function() {
         pills: [], // coord: (j, i)
         energizers: [], // coord: (j, i)
         pacmans: [], // coord: (j, i)
-        ghosts: [], // (type, coord); type: ghost types (blinky, inky, pinky, or clyde); coord: (j, i)
+        ghosts: [], // (type, coord); type: ghost types (blinky, pinky, inky, or clyde); coord: (j, i)
         status: [],
         animationList: []
     };
-
-    // temp data
-    /*
-    this.state.map = JSON.parse('{"width":32,"height":20,"data":{"0":{"0":1,"1":1,"2":1,"3":1,"4":1,"5":1,"6":1,"7":1,"8":1,"9":1,"10":1,"11":1,"12":1,"13":1,"14":1,"15":1,"16":1,"17":1,"18":1,"19":1,"20":1,"21":1,"22":1,"23":1,"24":1,"25":1,"26":1,"27":1,"28":1,"29":1,"30":1,"31":1},"1":{"0":1,"1":0,"2":0,"3":0,"4":0,"5":0,"6":0,"7":0,"8":0,"9":0,"10":0,"11":0,"12":0,"13":0,"14":0,"15":0,"16":0,"17":0,"18":0,"19":1,"20":1,"21":0,"22":0,"23":0,"24":0,"25":0,"26":0,"27":0,"28":0,"29":0,"30":0,"31":1},"2":{"0":1,"1":0,"2":1,"3":1,"4":1,"5":1,"6":0,"7":1,"8":1,"9":0,"10":1,"11":1,"12":1,"13":0,"14":1,"15":1,"16":1,"17":1,"18":0,"19":1,"20":1,"21":0,"22":1,"23":1,"24":0,"25":1,"26":1,"27":1,"28":1,"29":1,"30":0,"31":1},"3":{"0":1,"1":0,"2":1,"3":1,"4":1,"5":1,"6":0,"7":1,"8":1,"9":0,"10":1,"11":1,"12":1,"13":0,"14":1,"15":1,"16":1,"17":1,"18":0,"19":1,"20":1,"21":0,"22":1,"23":1,"24":0,"25":1,"26":1,"27":1,"28":1,"29":1,"30":0,"31":1},"4":{"0":1,"1":0,"2":0,"3":0,"4":0,"5":0,"6":0,"7":0,"8":0,"9":0,"10":1,"11":1,"12":1,"13":0,"14":1,"15":1,"16":0,"17":0,"18":0,"19":1,"20":1,"21":0,"22":1,"23":1,"24":0,"25":0,"26":0,"27":0,"28":0,"29":0,"30":0,"31":1},"5":{"0":1,"1":1,"2":1,"3":0,"4":1,"5":1,"6":1,"7":1,"8":0,"9":1,"10":1,"11":1,"12":1,"13":0,"14":1,"15":1,"16":0,"17":1,"18":1,"19":1,"20":1,"21":0,"22":0,"23":0,"24":0,"25":1,"26":1,"27":1,"28":0,"29":0,"30":0,"31":1},"6":{"0":1,"1":1,"2":1,"3":0,"4":1,"5":1,"6":1,"7":1,"8":0,"9":1,"10":1,"11":1,"12":1,"13":0,"14":1,"15":1,"16":0,"17":1,"18":1,"19":1,"20":1,"21":1,"22":1,"23":1,"24":0,"25":1,"26":1,"27":1,"28":0,"29":1,"30":1,"31":1},"7":{"0":1,"1":0,"2":0,"3":0,"4":0,"5":0,"6":0,"7":0,"8":0,"9":0,"10":0,"11":0,"12":0,"13":0,"14":1,"15":1,"16":0,"17":1,"18":1,"19":1,"20":1,"21":1,"22":1,"23":1,"24":0,"25":1,"26":1,"27":0,"28":0,"29":1,"30":1,"31":1},"8":{"0":1,"1":0,"2":1,"3":1,"4":0,"5":1,"6":1,"7":1,"8":1,"9":1,"10":0,"11":1,"12":1,"13":0,"14":0,"15":0,"16":0,"17":0,"18":0,"19":0,"20":0,"21":0,"22":0,"23":0,"24":0,"25":1,"26":1,"27":0,"28":1,"29":1,"30":1,"31":1},"9":{"0":1,"1":0,"2":1,"3":1,"4":0,"5":1,"6":1,"7":1,"8":1,"9":1,"10":0,"11":1,"12":1,"13":0,"14":1,"15":1,"16":1,"17":1,"18":1,"19":0,"20":1,"21":1,"22":0,"23":1,"24":1,"25":1,"26":1,"27":0,"28":1,"29":1,"30":1,"31":1},"10":{"0":1,"1":0,"2":1,"3":1,"4":0,"5":1,"6":1,"7":0,"8":1,"9":1,"10":0,"11":1,"12":1,"13":0,"14":1,"15":1,"16":1,"17":1,"18":1,"19":0,"20":1,"21":1,"22":0,"23":1,"24":1,"25":1,"26":1,"27":0,"28":0,"29":1,"30":1,"31":1},"11":{"0":1,"1":0,"2":1,"3":1,"4":0,"5":0,"6":0,"7":0,"8":0,"9":0,"10":0,"11":0,"12":0,"13":0,"14":0,"15":0,"16":0,"17":0,"18":0,"19":0,"20":0,"21":0,"22":0,"23":1,"24":1,"25":1,"26":1,"27":1,"28":0,"29":0,"30":0,"31":1},"12":{"0":1,"1":0,"2":1,"3":1,"4":0,"5":1,"6":1,"7":1,"8":1,"9":1,"10":1,"11":0,"12":1,"13":1,"14":1,"15":1,"16":0,"17":1,"18":1,"19":1,"20":1,"21":1,"22":0,"23":1,"24":1,"25":1,"26":1,"27":1,"28":0,"29":1,"30":1,"31":1},"13":{"0":1,"1":0,"2":1,"3":1,"4":0,"5":1,"6":1,"7":1,"8":1,"9":1,"10":1,"11":0,"12":1,"13":1,"14":1,"15":1,"16":0,"17":1,"18":1,"19":1,"20":1,"21":1,"22":0,"23":1,"24":1,"25":1,"26":1,"27":1,"28":0,"29":1,"30":1,"31":1},"14":{"0":1,"1":0,"2":0,"3":0,"4":0,"5":0,"6":1,"7":1,"8":0,"9":0,"10":0,"11":0,"12":0,"13":0,"14":0,"15":0,"16":0,"17":0,"18":0,"19":0,"20":0,"21":0,"22":0,"23":0,"24":0,"25":0,"26":0,"27":0,"28":0,"29":1,"30":1,"31":1},"15":{"0":1,"1":0,"2":1,"3":1,"4":1,"5":1,"6":1,"7":1,"8":1,"9":1,"10":0,"11":1,"12":1,"13":1,"14":1,"15":1,"16":1,"17":1,"18":1,"19":1,"20":1,"21":0,"22":1,"23":1,"24":1,"25":1,"26":1,"27":1,"28":0,"29":1,"30":1,"31":1},"16":{"0":1,"1":0,"2":1,"3":1,"4":1,"5":1,"6":1,"7":1,"8":1,"9":1,"10":0,"11":1,"12":1,"13":1,"14":1,"15":1,"16":1,"17":1,"18":1,"19":1,"20":1,"21":0,"22":1,"23":1,"24":1,"25":1,"26":1,"27":1,"28":0,"29":1,"30":1,"31":1},"17":{"0":1,"1":0,"2":1,"3":1,"4":1,"5":1,"6":0,"7":1,"8":1,"9":1,"10":0,"11":1,"12":1,"13":1,"14":0,"15":0,"16":0,"17":0,"18":0,"19":1,"20":1,"21":0,"22":0,"23":0,"24":0,"25":0,"26":1,"27":1,"28":0,"29":1,"30":1,"31":1},"18":{"0":1,"1":0,"2":0,"3":0,"4":0,"5":0,"6":0,"7":0,"8":0,"9":0,"10":0,"11":1,"12":1,"13":1,"14":0,"15":1,"16":1,"17":1,"18":0,"19":0,"20":0,"21":0,"22":1,"23":1,"24":1,"25":0,"26":0,"27":0,"28":0,"29":1,"30":1,"31":1},"19":{"0":1,"1":1,"2":1,"3":1,"4":1,"5":1,"6":1,"7":1,"8":1,"9":1,"10":1,"11":1,"12":1,"13":1,"14":1,"15":1,"16":1,"17":1,"18":1,"19":1,"20":1,"21":1,"22":1,"23":1,"24":1,"25":1,"26":1,"27":1,"28":1,"29":1,"30":1,"31":1}}}');
-    this.state.ghosts = [
-        {
-            id: 0,
-            type: "ghost_blinky",
-            coordinate: [2, 4],
-            orientation: 0
-        },
-        {
-            id: 1,
-            type: "ghost_pinky",
-            coordinate: [3, 1],
-            orientation: 1
-        },
-        {
-            id: 2,
-            type: "ghost_inky",
-            coordinate: [3, 4],
-            orientation: 2
-        },
-        {
-            id: 3,
-            type: "ghost_clyde",
-            coordinate: [5, 1],
-            orientation: 3
-        }
-    ];
-    this.state.pacmans = [
-        {
-            id: 4,
-            coordinate: [7, 1],
-            orientation: 0
-        },
-        {
-            id: 5,
-            coordinate: [7, 7],
-            orientation: 1
-        },
-        {
-            id: 6,
-            coordinate: [9, 1],
-            orientation: 2
-        },
-        {
-            id: 7,
-            coordinate: [9, 7],
-            orientation: 3
-        },
-    ];*/
 
     this.canvas = document.getElementById("canvas");
     this.canvasContext = this.canvas.getContext('2d');
@@ -203,10 +155,32 @@ Pacman.prototype.drawRect = function(i, j, fillStyle) {
     this.canvasContext.strokeRect(x, y, width, height);
     this.canvasContext.restore();
 }
-Pacman.prototype.drawWall = function(i, j) {
-    if (i < 0 || j < 0 || i >= this.state.map.height || j >= this.state.map.width || !this.isWall(i, j)) {
+Pacman.prototype.drawTile = function(i, j) {
+    if (i < 0 || j < 0 || i >= this.state.map.height || j >= this.state.map.width) {
         return false;
     }
+    if (this.isWall(i, j)) {
+        this.drawWall(i, j);
+    }
+    if (this.isFood(i, j)) { // may be pill or energizers
+        this.drawFood(i, j);
+    }
+}
+Pacman.prototype.drawFood = function(i, j) {
+    var tileSize = this.config.tile.size,
+        radius = this.config.food.radius;
+    var adjusted_i = i + this.state.user.minimum[1],
+        adjusted_j = j + this.state.user.minimum[0],
+        x = j * tileSize,
+        y = i * tileSize;
+    this.canvasContext.save();
+    this.canvasContext.fillStyle = this.config.food.color;
+    this.canvasContext.beginPath();
+    this.canvasContext.arc(x + tileSize / 2, y + tileSize / 2, radius, 0,  2 * Math.PI, false);
+    this.canvasContext.fill();
+    this.canvasContext.restore();
+};
+Pacman.prototype.drawWall = function(i, j) {
     var tileSize = this.config.tile.size,
         radius = Math.floor(tileSize / 2);
     this.canvasContext.save();
@@ -275,6 +249,14 @@ Pacman.prototype.isWall = function(i, j) {
         adjusted_j = j + this.state.user.minimum[0];
     return (this.state.map.data[adjusted_i][adjusted_j] == 1);
 };
+Pacman.prototype.isFood = function(i, j) {
+    if (i < 0 || j < 0 || i >= this.state.map.height || j >= this.state.map.width) {
+        return false;
+    }
+    var adjusted_i = i + this.state.user.minimum[1],
+        adjusted_j = j + this.state.user.minimum[0];
+    return (this.state.pills.findIndex((v) => { return v[1] === adjusted_i && v[0] === adjusted_j; }) > 0);
+};
 Pacman.prototype.drawPacman = function(i, j, orientation) {
     this.animateEatingPacman(i, j, orientation, 0);
 };
@@ -336,13 +318,18 @@ Pacman.prototype.drawMap = function () {
     this.clearMap();
     for (var i = 0; i < this.state.map.height; i++) {
         for (var j = 0; j < this.state.map.width; j++) {
-            this.drawWall(i, j);
+            this.drawTile(i, j);
         }
     }
     this.drawPlayers();
 };
 
-
+Pacman.prototype.updateFood = function(data) {
+    this.state.pills = [];
+    data.forEach((v) => {
+        this.state.pills.push([v.x, v.y]);
+    }, this);
+};
 Pacman.prototype.updateMap = function(data) {
     this.state.map.height = data.length;
     this.state.map.width = data[0].length;
