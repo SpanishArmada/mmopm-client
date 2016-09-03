@@ -22,14 +22,15 @@ PacmanWs.prototype.wsMessageHandler = function(event) {
         this.pacman.state.user.name = "Kenrick";
         this.pacman.state.user.id = data.player_id;
         this.pacman.state.user.coordinate = [data.x, data.y];
+        this.pacman.state.user.minimum = [Math.max(0, data.x - 16), Math.max(0, data.y - 9)];
         var msg = {
             type: 0,
             row: Math.floor(this.pacman.canvas.height / this.pacman.config.tile.size / 2),
             col: Math.floor(this.pacman.canvas.width / this.pacman.config.tile.size / 2),
             player_id: this.pacman.state.user.id,
-            player_name: this.pacman.state.user.name
+            player_name: this.pacman.state.user.name,
+            arrow: 4
         };
-        console.log(JSON.stringify(msg));
         this.ws.send(JSON.stringify(msg));
     } else if (type == 1) { // map update
         this.pacman.state.user.score = data.score;
@@ -110,9 +111,11 @@ var Pacman = function() {
         pacmans: [], // coord: (j, i)
         ghosts: [], // (type, coord); type: ghost types (blinky, inky, pinky, or clyde); coord: (j, i)
         status: [],
+        animationList: []
     };
 
     // temp data
+    /*
     this.state.map = JSON.parse('{"width":32,"height":20,"data":{"0":{"0":1,"1":1,"2":1,"3":1,"4":1,"5":1,"6":1,"7":1,"8":1,"9":1,"10":1,"11":1,"12":1,"13":1,"14":1,"15":1,"16":1,"17":1,"18":1,"19":1,"20":1,"21":1,"22":1,"23":1,"24":1,"25":1,"26":1,"27":1,"28":1,"29":1,"30":1,"31":1},"1":{"0":1,"1":0,"2":0,"3":0,"4":0,"5":0,"6":0,"7":0,"8":0,"9":0,"10":0,"11":0,"12":0,"13":0,"14":0,"15":0,"16":0,"17":0,"18":0,"19":1,"20":1,"21":0,"22":0,"23":0,"24":0,"25":0,"26":0,"27":0,"28":0,"29":0,"30":0,"31":1},"2":{"0":1,"1":0,"2":1,"3":1,"4":1,"5":1,"6":0,"7":1,"8":1,"9":0,"10":1,"11":1,"12":1,"13":0,"14":1,"15":1,"16":1,"17":1,"18":0,"19":1,"20":1,"21":0,"22":1,"23":1,"24":0,"25":1,"26":1,"27":1,"28":1,"29":1,"30":0,"31":1},"3":{"0":1,"1":0,"2":1,"3":1,"4":1,"5":1,"6":0,"7":1,"8":1,"9":0,"10":1,"11":1,"12":1,"13":0,"14":1,"15":1,"16":1,"17":1,"18":0,"19":1,"20":1,"21":0,"22":1,"23":1,"24":0,"25":1,"26":1,"27":1,"28":1,"29":1,"30":0,"31":1},"4":{"0":1,"1":0,"2":0,"3":0,"4":0,"5":0,"6":0,"7":0,"8":0,"9":0,"10":1,"11":1,"12":1,"13":0,"14":1,"15":1,"16":0,"17":0,"18":0,"19":1,"20":1,"21":0,"22":1,"23":1,"24":0,"25":0,"26":0,"27":0,"28":0,"29":0,"30":0,"31":1},"5":{"0":1,"1":1,"2":1,"3":0,"4":1,"5":1,"6":1,"7":1,"8":0,"9":1,"10":1,"11":1,"12":1,"13":0,"14":1,"15":1,"16":0,"17":1,"18":1,"19":1,"20":1,"21":0,"22":0,"23":0,"24":0,"25":1,"26":1,"27":1,"28":0,"29":0,"30":0,"31":1},"6":{"0":1,"1":1,"2":1,"3":0,"4":1,"5":1,"6":1,"7":1,"8":0,"9":1,"10":1,"11":1,"12":1,"13":0,"14":1,"15":1,"16":0,"17":1,"18":1,"19":1,"20":1,"21":1,"22":1,"23":1,"24":0,"25":1,"26":1,"27":1,"28":0,"29":1,"30":1,"31":1},"7":{"0":1,"1":0,"2":0,"3":0,"4":0,"5":0,"6":0,"7":0,"8":0,"9":0,"10":0,"11":0,"12":0,"13":0,"14":1,"15":1,"16":0,"17":1,"18":1,"19":1,"20":1,"21":1,"22":1,"23":1,"24":0,"25":1,"26":1,"27":0,"28":0,"29":1,"30":1,"31":1},"8":{"0":1,"1":0,"2":1,"3":1,"4":0,"5":1,"6":1,"7":1,"8":1,"9":1,"10":0,"11":1,"12":1,"13":0,"14":0,"15":0,"16":0,"17":0,"18":0,"19":0,"20":0,"21":0,"22":0,"23":0,"24":0,"25":1,"26":1,"27":0,"28":1,"29":1,"30":1,"31":1},"9":{"0":1,"1":0,"2":1,"3":1,"4":0,"5":1,"6":1,"7":1,"8":1,"9":1,"10":0,"11":1,"12":1,"13":0,"14":1,"15":1,"16":1,"17":1,"18":1,"19":0,"20":1,"21":1,"22":0,"23":1,"24":1,"25":1,"26":1,"27":0,"28":1,"29":1,"30":1,"31":1},"10":{"0":1,"1":0,"2":1,"3":1,"4":0,"5":1,"6":1,"7":0,"8":1,"9":1,"10":0,"11":1,"12":1,"13":0,"14":1,"15":1,"16":1,"17":1,"18":1,"19":0,"20":1,"21":1,"22":0,"23":1,"24":1,"25":1,"26":1,"27":0,"28":0,"29":1,"30":1,"31":1},"11":{"0":1,"1":0,"2":1,"3":1,"4":0,"5":0,"6":0,"7":0,"8":0,"9":0,"10":0,"11":0,"12":0,"13":0,"14":0,"15":0,"16":0,"17":0,"18":0,"19":0,"20":0,"21":0,"22":0,"23":1,"24":1,"25":1,"26":1,"27":1,"28":0,"29":0,"30":0,"31":1},"12":{"0":1,"1":0,"2":1,"3":1,"4":0,"5":1,"6":1,"7":1,"8":1,"9":1,"10":1,"11":0,"12":1,"13":1,"14":1,"15":1,"16":0,"17":1,"18":1,"19":1,"20":1,"21":1,"22":0,"23":1,"24":1,"25":1,"26":1,"27":1,"28":0,"29":1,"30":1,"31":1},"13":{"0":1,"1":0,"2":1,"3":1,"4":0,"5":1,"6":1,"7":1,"8":1,"9":1,"10":1,"11":0,"12":1,"13":1,"14":1,"15":1,"16":0,"17":1,"18":1,"19":1,"20":1,"21":1,"22":0,"23":1,"24":1,"25":1,"26":1,"27":1,"28":0,"29":1,"30":1,"31":1},"14":{"0":1,"1":0,"2":0,"3":0,"4":0,"5":0,"6":1,"7":1,"8":0,"9":0,"10":0,"11":0,"12":0,"13":0,"14":0,"15":0,"16":0,"17":0,"18":0,"19":0,"20":0,"21":0,"22":0,"23":0,"24":0,"25":0,"26":0,"27":0,"28":0,"29":1,"30":1,"31":1},"15":{"0":1,"1":0,"2":1,"3":1,"4":1,"5":1,"6":1,"7":1,"8":1,"9":1,"10":0,"11":1,"12":1,"13":1,"14":1,"15":1,"16":1,"17":1,"18":1,"19":1,"20":1,"21":0,"22":1,"23":1,"24":1,"25":1,"26":1,"27":1,"28":0,"29":1,"30":1,"31":1},"16":{"0":1,"1":0,"2":1,"3":1,"4":1,"5":1,"6":1,"7":1,"8":1,"9":1,"10":0,"11":1,"12":1,"13":1,"14":1,"15":1,"16":1,"17":1,"18":1,"19":1,"20":1,"21":0,"22":1,"23":1,"24":1,"25":1,"26":1,"27":1,"28":0,"29":1,"30":1,"31":1},"17":{"0":1,"1":0,"2":1,"3":1,"4":1,"5":1,"6":0,"7":1,"8":1,"9":1,"10":0,"11":1,"12":1,"13":1,"14":0,"15":0,"16":0,"17":0,"18":0,"19":1,"20":1,"21":0,"22":0,"23":0,"24":0,"25":0,"26":1,"27":1,"28":0,"29":1,"30":1,"31":1},"18":{"0":1,"1":0,"2":0,"3":0,"4":0,"5":0,"6":0,"7":0,"8":0,"9":0,"10":0,"11":1,"12":1,"13":1,"14":0,"15":1,"16":1,"17":1,"18":0,"19":0,"20":0,"21":0,"22":1,"23":1,"24":1,"25":0,"26":0,"27":0,"28":0,"29":1,"30":1,"31":1},"19":{"0":1,"1":1,"2":1,"3":1,"4":1,"5":1,"6":1,"7":1,"8":1,"9":1,"10":1,"11":1,"12":1,"13":1,"14":1,"15":1,"16":1,"17":1,"18":1,"19":1,"20":1,"21":1,"22":1,"23":1,"24":1,"25":1,"26":1,"27":1,"28":1,"29":1,"30":1,"31":1}}}');
     this.state.ghosts = [
         {
@@ -161,7 +164,7 @@ var Pacman = function() {
             coordinate: [9, 7],
             orientation: 3
         },
-    ];
+    ];*/
 
     this.canvas = document.getElementById("canvas");
     this.canvasContext = this.canvas.getContext('2d');
@@ -212,8 +215,8 @@ Pacman.prototype.drawWall = function(i, j) {
     this.canvasContext.beginPath();
     var adjusted_i = i + this.state.user.minimum[1],
         adjusted_j = j + this.state.user.minimum[0],
-        x = adjusted_j * tileSize,
-        y = adjusted_i * tileSize;
+        x = j * tileSize,
+        y = i * tileSize;
     
     switch (this.wallType(i, j)) {
         case 1:
@@ -265,11 +268,11 @@ Pacman.prototype.wallType = function(i, j) {
 
 }
 Pacman.prototype.isWall = function(i, j) {
-    var adjusted_i = i + this.state.user.minimum[1],
-        adjusted_j = j + this.state.user.minimum[0];
-    if (adjusted_i < 0 || adjusted_j < 0 || adjusted_i >= this.state.map.height || adjusted_j >= this.state.map.width) {
+    if (i < 0 || j < 0 || i >= this.state.map.height || j >= this.state.map.width) {
         return true;
     }
+    var adjusted_i = i + this.state.user.minimum[1],
+        adjusted_j = j + this.state.user.minimum[0];
     return (this.state.map.data[adjusted_i][adjusted_j] == 1);
 };
 Pacman.prototype.drawPacman = function(i, j, orientation) {
@@ -294,25 +297,16 @@ Pacman.prototype.drawPlayers = function() {
 Pacman.prototype.updateGhosts = function (newGhosts) {
     newGhosts.forEach(function (newGhost) {
         var oldGhost = this.state.ghosts.find((v) => { return v.id == newGhost.id });
-        if (typeof(oldGhost) === "undefined" || true) {
-            this.drawGhost(
-                newGhost.coordinate[1] - this.state.user.minimum[1],
-                newGhost.coordinate[0] - this.state.user.minimum[0],
-                newGhost.type,
-                newGhost.orientation
-            );
+        if (typeof(oldGhost) === "undefined") {
+            this.state.ghosts.push(newGhost);
         }
     }, this);
 };
 Pacman.prototype.updatePacmans = function (newPacmans) {
     newPacmans.forEach(function (newPacman) {
         var oldPacman = this.state.pacmans.find((v) => { return v.id == newPacman.id });
-        if (typeof(oldPacman) === "undefined" || true) {
-            this.drawPacman(
-                newPacman.coordinate[1] - this.state.user.minimum[1],
-                newPacman.coordinate[0] - this.state.user.minimum[0],
-                newPacman.orientation
-            );
+        if (typeof(oldPacman) === "undefined") {
+            this.state.pacmans.push(newPacman);
         }
     }, this);
 };
@@ -325,14 +319,18 @@ Pacman.prototype.animateEatingPacman = function(i, j, orientation, tick) {
     }
     tick = tick % 1000;
     this.drawImage(i, j, this.config.playerTypes['pacman'], this.config.tile.playerSize * o, this.config.tile.playerSize * orientation);
-    requestAnimationFrame(function () {
+    this.state.animationList.push(requestAnimationFrame(function () {
         this.animateEatingPacman(i, j, orientation, tick + 1);
-    }.bind(this));
+    }.bind(this)));
 }
 Pacman.prototype.clearMap = function () {
     this.canvasContext.save();
     this.canvasContext.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.canvasContext.restore();
+    this.state.animationList.forEach((v) => {
+        cancelAnimationFrame(v);
+    });
+    this.state.animationList = [];
 }
 Pacman.prototype.drawMap = function () {
     this.clearMap();
@@ -346,13 +344,15 @@ Pacman.prototype.drawMap = function () {
 
 
 Pacman.prototype.updateMap = function(data) {
-    console.log(data);
     this.state.map.height = data.length;
     this.state.map.width = data[0].length;
 
     for (var i = 0; i < this.state.map.height; i++) {
+        if (!((this.state.user.minimum[1] + i) in this.state.map.data)) {
+            this.state.map.data[this.state.user.minimum[1] + i] = {};
+        }
         for (var j = 0; j < this.state.map.width; j++) {
-            this.state.map[i][j] = data[i][j];
+            this.state.map.data[this.state.user.minimum[1] + i][this.state.user.minimum[0] + j] = data[i][j];
         }
     }
     this.drawMap();
