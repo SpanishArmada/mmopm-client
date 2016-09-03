@@ -18,7 +18,7 @@ PacmanWs.prototype.wsOpenHandler = function(event) {
 PacmanWs.prototype.wsMessageHandler = function(event) {
     var data = JSON.parse(event.data),
         type = data.type;
-    // console.log(data);
+    console.log(data);
     if (type == 0) { // init msg
         this.pacman.state.user.name = "Kenrick";
         this.pacman.state.user.id = data.player_id;
@@ -61,9 +61,7 @@ PacmanWs.prototype.wsMessageHandler = function(event) {
                 });
             }
         }
-        this.pacman.updateGhosts(newGhosts);
-       
-        var newPacmans = [];
+        var newPacmans = [], new_x = 0, new_y = 0;
         for (var pacmanId in data.pac_pos) {
             if (data.pac_pos.hasOwnProperty(pacmanId)) {
                 var pacman = data.pac_pos[pacmanId];
@@ -72,8 +70,16 @@ PacmanWs.prototype.wsMessageHandler = function(event) {
                     orientation: pacman.orientation,
                     coordinate: [pacman.x, pacman.y]
                 });
+
+                if (this.pacman.state.user.id == pacmanId) {
+                    new_x = pacman.x;
+                    new_y = pacman.y;
+                }
             }
         }
+        this.pacman.state.user.minimum = [Math.max(0, new_x - 16), Math.max(0, new_y - 9)];
+
+        this.pacman.updateGhosts(newGhosts);
         this.pacman.updatePacmans(newPacmans);
         this.pacman.updateFood(data.food_pos);
         this.pacman.updateMap(data.grids);
@@ -289,19 +295,15 @@ Pacman.prototype.drawPlayers = function() {
     }, this);
 };
 Pacman.prototype.updateGhosts = function (newGhosts) {
+    this.state.ghosts = [];
     newGhosts.forEach(function (newGhost) {
-        var oldGhost = this.state.ghosts.find((v) => { return v.id == newGhost.id });
-        if (typeof(oldGhost) === "undefined") {
-            this.state.ghosts.push(newGhost);
-        }
+        this.state.ghosts.push(newGhost);
     }, this);
 };
 Pacman.prototype.updatePacmans = function (newPacmans) {
+    this.state.pacmans = [];
     newPacmans.forEach(function (newPacman) {
-        var oldPacman = this.state.pacmans.find((v) => { return v.id == newPacman.id });
-        if (typeof(oldPacman) === "undefined") {
-            this.state.pacmans.push(newPacman);
-        }
+        this.state.pacmans.push(newPacman);
     }, this);
 };
 
