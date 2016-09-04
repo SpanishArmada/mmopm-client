@@ -1,7 +1,7 @@
 "use strict";
 var PacmanWs = function(pacman) {
-    // this.ws = new WebSocket("ws://172.22.118.161:8888/ws");
-    this.ws = new WebSocket("ws://localhost:8888/ws");
+    this.ws = new WebSocket("ws://172.22.118.161:8888/ws");
+    // this.ws = new WebSocket("ws://localhost:8888/ws");
     this.pacman = pacman;
     this.ws.onopen = this.wsOpenHandler.bind(this);
     this.ws.onmessage = this.wsMessageHandler.bind(this);
@@ -398,14 +398,14 @@ function setResizeHandler(callback, timeout) {
     });
 }
 document.addEventListener("DOMContentLoaded", function () {
+    document.querySelector("#overlay").style.display = "none";
+    document.querySelector("#cancel").style.display = "none";
+    document.querySelector("#start").style.display = "none";
+    document.querySelector("#prompt").style.display = "none";
     var pacman = new Pacman();
     pacman.drawMap();
     var pacmanWs = new PacmanWs(pacman);
     console.log(pacmanWs);
 
-    document.querySelector("#overlay").style.display = "none";
-    document.querySelector("#cancel").style.display = "none";
-    document.querySelector("#start").style.display = "none";
-    document.querySelector("#prompt").style.display = "none";
     setResizeHandler(pacman.handleWindowResize.bind(pacman), 100);
 }, false);
