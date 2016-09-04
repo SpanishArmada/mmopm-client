@@ -86,7 +86,7 @@ PacmanWs.prototype.wsMessageHandler = function(event) {
         this.pacman.updateMap(data.grids);
 
     } else if (type == 2) { // die
-        alert("Dead");
+        window.alert("Game Over!");
     }
 };
 
