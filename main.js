@@ -1,7 +1,6 @@
 "use strict";
 var PacmanWs = function(pacman) {
-    this.ws = new WebSocket("ws://172.22.118.161:8888/ws");
-    // this.ws = new WebSocket("ws://localhost:8888/ws");
+    this.ws = new WebSocket("wss://mmopm.herokuapp.com/ws");
     this.pacman = pacman;
     this.ws.onopen = this.wsOpenHandler.bind(this);
     this.ws.onmessage = this.wsMessageHandler.bind(this);
@@ -18,7 +17,7 @@ PacmanWs.prototype.wsOpenHandler = function(event) {
 PacmanWs.prototype.wsMessageHandler = function(event) {
     var data = JSON.parse(event.data),
         type = data.type;
-    console.log(data);
+    // console.log(data);
     if (type == 0) { // init msg
         this.pacman.state.user.name = "Kenrick";
         this.pacman.state.user.id = data.player_id;
@@ -86,7 +85,7 @@ PacmanWs.prototype.wsMessageHandler = function(event) {
         this.pacman.updateMap(data.grids);
 
     } else if (type == 2) { // die
-        window.alert("Game Over!");
+        window.alert("Game Over!\nPlease refresh window to restart game.");
     }
 };
 
