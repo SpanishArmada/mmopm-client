@@ -9,7 +9,7 @@ Client for MMO Pac-Man.
 
 ## Demo
 
-[Client demo](http://rawgit.com/SpanishArmada/mmopm-client/master/index.html)
+[Client demo](https://spanisharmada.github.io/mmopm-client/)
 
 ## Server
 [link](https://github.com/SpanishArmada/MMO-Pac-Man)
