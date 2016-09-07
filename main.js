@@ -31,8 +31,28 @@ PacmanWs.prototype.wsMessageHandler = function(event) {
         };
         this.ws.send(JSON.stringify(msg));
 
-        window.addEventListener("keypress", function(event) {
-            var arrow = ["ArrowLeft", "ArrowUp", "ArrowRight", "ArrowDown"].indexOf(event.key);
+        window.addEventListener("keydown", function(event) {
+            var eventKey = "";
+
+            if (event.key !== undefined) {
+                var mapping = {
+                    37: 'ArrowLeft',
+                    38: 'ArrowUp',
+                    39: 'ArrowRight',
+                    40: 'ArrowDown'
+                };
+                var keyCode = event.which || event.keyCode;
+                if (keyCode in mapping) {
+                    eventKey = mapping[keyCode];
+                } else {
+                    eventKey = null;
+                }
+                
+            } else {
+                eventKey = event.key;
+            }
+
+            var arrow = ["ArrowLeft", "ArrowUp", "ArrowRight", "ArrowDown"].indexOf(eventKey);
             if (arrow < 0)
                 arrow = 4;
             var msg = {
@@ -150,7 +170,7 @@ var Pacman = function() {
 };
 Pacman.prototype.handleWindowResize = function() {
     this.canvas.width = document.body.clientWidth;
-    this.canvas.height = document.body.clientHeight - 50;
+    this.canvas.height = document.body.clientHeight - 55;
     this.drawMap();
 };
 Pacman.prototype.drawImage = function(i, j, img, offsetX, offsetY) {

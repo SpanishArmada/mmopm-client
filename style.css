@@ -5,7 +5,7 @@ html, body {
     height: 100%;
     color: #fff;
     font-family: 'Roboto Mono', monospace;
-    background: #fff;
+    background: #000;
 }
 #header {
     width: 100%;
@@ -22,7 +22,7 @@ h1 {
 }
 main {
     width: 100%;
-    height: calc(100% - 50px);
+    height: calc(100% - 55px);
     margin: 0 auto;
     position: relative;
 }
