@@ -1,6 +1,6 @@
 "use strict";
 var PacmanWs = function(pacman) {
-    this.ws = new WebSocket("wss://mmopm.herokuapp.com/ws");
+    this.ws = new WebSocket("wss://mmopm.fly.dev/ws");
     this.pacman = pacman;
     this.ws.onopen = this.wsOpenHandler.bind(this);
     this.ws.onmessage = this.wsMessageHandler.bind(this);
